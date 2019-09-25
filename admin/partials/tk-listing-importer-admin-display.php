@@ -185,19 +185,19 @@
                     if (get_option('timezone_string'))
                       $tz = new DateTimeZone(get_option('timezone_string'));    // TODO: We have an issue here ???
 
+                    $schedImport = 'None';
+                    $schedImportTs = 0;
                     if (wp_next_scheduled('tk_listing_import')) {
                         $date = new DateTime('@' . wp_next_scheduled('tk_listing_import'));
                         $date->setTimezone($tz);
                         $schedImport = $date->format('l, j M Y h:i A');
                         $schedImportTs = $date->getTimestamp();
                     }
-                    $schedImport = 'None';
-                    $schedImportTs = 0;
 
                     $pastImport = 'Never';
                     $pastImportTs = 0;
                     if ($lastImport) {
-                        $date = new DateTime($lastImport);
+                        $date = new DateTime('@'.$lastImport);
                         $date->setTimezone($tz);
                         $pastImport = $date->format('l, j M Y h:i A');
                         $pastImportTs = $date->getTimestamp();
