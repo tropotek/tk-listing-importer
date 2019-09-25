@@ -29,6 +29,4 @@ plugin settings and activate the plugin.
  See [Documentation](https://github.com/tropotek/tk-listing-exporter/blob/master/docs/tk-listing-exporter-importer.pdf) for more information.
 
 
-## Notes
 
- Here are some [random notes](https://github.com/tropotek/tk-listing-exporter/blob/master/docs/notes.md) for developers
