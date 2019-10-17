@@ -90,13 +90,8 @@ class Tk_Listing_Importer_Admin {
 		return array_merge(  $settings_link, $links );
 	}
 
-	/**
-	 * Render the settings page for this plugin.
-	 *
-	 * @since    1.0.0
-	 */
-	public function display_plugin_setup_page() {
-		include_once('partials/tk-listing-importer-admin-display.php');
+
+	public function onInit() {
 
 		if (!empty($_GET['clear-locks'])) {
             Tk_Import::getInstance()->clearLocks();
@@ -108,7 +103,9 @@ class Tk_Listing_Importer_Admin {
 			exit();
         } else if (!empty($_GET['import'])) {
 			if (!empty($_GET['dl'])) {  // Download xml
-                wp_safe_redirect($this->plugin->getExporterUrl());
+                error_log($this->plugin->getExporterUrl());
+                wp_redirect($this->plugin->getExporterUrl());
+                //wp_safe_redirect($this->plugin->getExporterUrl());
                 exit();
 			}
             $_SESSION['tk-listing-importer_import-run'] = true;
@@ -116,6 +113,7 @@ class Tk_Listing_Importer_Admin {
             wp_safe_redirect('options-general.php?page=tk-listing-importer');
             exit();
 		}
+
 
 		// Do this to avoid page reload re-running the importer
 		if (!empty($_SESSION['tk-listing-importer_import-run'])) {
@@ -138,6 +136,17 @@ class Tk_Listing_Importer_Admin {
 			wp_safe_redirect('options-general.php?page=tk-listing-importer');
 			exit();
         }
+
+    }
+
+	/**
+	 * Render the settings page for this plugin.
+	 *
+	 * @since    1.0.0
+	 */
+	public function display_plugin_setup_page() {
+
+		include_once('partials/tk-listing-importer-admin-display.php');
 
 	}
 

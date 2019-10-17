@@ -185,6 +185,7 @@ class Tk_Listing_Importer {
 		$this->loader->add_filter( 'plugin_action_links_' . $plugin_basename, $plugin_admin, 'add_action_links' );
 
 		// Save/Update our plugin options
+		$this->loader->add_action('admin_init', $plugin_admin, 'onInit');
 		$this->loader->add_action('admin_init', $plugin_admin, 'options_update');
 	}
 
