@@ -508,20 +508,20 @@ class Tk_Import extends WP_Importer  {
             )
         );
 
-        // Delete orphaned post
-        $r = $this->wpdb->query("
-DELETE p, pp
-FROM {$this->wpdb->posts} p
-LEFT JOIN {$this->wpdb->posts} pp ON (pp.post_parent > 0 AND p.ID = pp.post_parent)
-WHERE pp.ID IS NULL
-");
-        // Delete orphaned metadata
-        $r = $this->wpdb->query("
-DELETE pm 
-FROM {$this->wpdb->postmeta} pm
-LEFT JOIN {$this->wpdb->posts} wp ON wp.ID = pm.post_id
-WHERE wp.ID IS NULL
-");
+//        // Delete orphaned post
+//        $r = $this->wpdb->query("
+//DELETE p, pp
+//FROM {$this->wpdb->posts} p
+//LEFT JOIN {$this->wpdb->posts} pp ON (pp.post_parent > 0 AND p.ID = pp.post_parent)
+//WHERE pp.ID IS NULL
+//");
+//        // Delete orphaned metadata
+//        $r = $this->wpdb->query("
+//DELETE pm
+//FROM {$this->wpdb->postmeta} pm
+//LEFT JOIN {$this->wpdb->posts} wp ON wp.ID = pm.post_id
+//WHERE wp.ID IS NULL
+//");
 
 		return $result!==false;
 
