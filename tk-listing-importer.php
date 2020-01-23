@@ -42,6 +42,19 @@ define( 'TK_LISTING_IMPORTER_NAME', 'tk-listing-importer' );
 if (!session_id() && !headers_sent())
 	session_start();
 
+
+/**
+ * @param string|mixed $msg
+ */
+function tkvd($msg)
+{
+    if (is_array($msg) || is_object($msg)) $msg = print_r($msg, true);
+    if (WP_DEBUG)
+        error_log($msg);
+
+}
+
+
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-tk-listing-importer-activator.php
@@ -94,3 +107,4 @@ function run_tk_listing_importer() {
 
 }
 run_tk_listing_importer();
+

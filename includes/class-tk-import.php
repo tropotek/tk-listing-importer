@@ -57,6 +57,8 @@ class Tk_Import extends WP_Importer  {
 	protected $featured_images = array();
 
 
+
+
 	public function __construct()
 	{
 		parent::__construct();
@@ -103,10 +105,9 @@ class Tk_Import extends WP_Importer  {
         if (is_file($this->lockFile)) {
             $this->log("ERROR: Lock File Exists: " . $this->lockFile);
             throw new Exception(__('Import already running, you can manually clear the locks if you are sure no import is running.'));
+			//return false;
         }
         file_put_contents($this->lockFile, time());
-
-		$this->log( '--> Importer Running: ' . $file );
 
 		// This is the only way for now,
 		// if not deleting existing we will skip posts as there is no easy way to update posts.
@@ -191,6 +192,9 @@ class Tk_Import extends WP_Importer  {
 		if ( !is_file($file) && filter_var($file, FILTER_VALIDATE_URL) === FALSE) {
 			throw new Exception(__( 'The file does not exist, please try again.', $this->plugin_name ));
 		}
+
+		$this->log('-----------> ' . $file);
+
 		$import_data = $this->parse($file);
 		if (is_wp_error($import_data)) {
 			throw new Exception($import_data->get_error_message());
@@ -502,7 +506,7 @@ class Tk_Import extends WP_Importer  {
             FROM {$this->wpdb->posts} posts
             LEFT JOIN {$this->wpdb->term_relationships} pt ON pt.object_id = posts.ID
             LEFT JOIN {$this->wpdb->postmeta} pm ON pm.post_id = posts.ID
-            WHERE posts.post_type = %s
+            WHERE posts.post_type = %s OR posts.post_type = 'attachment'
             ",
                 $post_type
             )
@@ -1053,11 +1057,15 @@ class Tk_Import extends WP_Importer  {
                 return new WP_Error( 'upload_dir_error', $upload['error'] );
 
             // fetch the remote url and write it to the placeholder file
-            $remote_response = wp_safe_remote_get($url, array(
+            $params = array(
                 'timeout' => 300,
                 'stream' => true,
                 'filename' => $upload['file'],
-            ));
+            );
+            if (WP_DEBUG) {
+                $params['sslverify'] = false;
+            }
+            $remote_response = wp_safe_remote_get($url, $params);
 
             $headers = wp_remote_retrieve_headers($remote_response);
             // request failed
@@ -1108,11 +1116,14 @@ class Tk_Import extends WP_Importer  {
             clearstatcache();
             return true;
         } else {
-            $srcSize = $this->getRemoteFilesize($src);
-            clearstatcache();
-            $dstSize = filesize($dst);
-            clearstatcache();
-            if ($dstSize != $srcSize) return true;
+            // TODO: If we can find out if a new image is uploaded it will get a new ID then this step is not required...
+            //    If an attachement cannot be updated (IE uploaded with the same ID and name) then just return false
+            // If the image needs to be checked to see if it is the same size us this (Slows down import tho)
+//            $srcSize = $this->getRemoteFilesize($src);
+//            clearstatcache();
+//            $dstSize = filesize($dst);
+//            clearstatcache();
+//            if ($dstSize != $srcSize) return true;
         }
         clearstatcache();
         return false;

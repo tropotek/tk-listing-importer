@@ -139,6 +139,76 @@ class Tk_Listing_Importer_Admin {
 
     }
 
+
+
+    public function wp_import_post_data_processed($postData, $post)
+    {
+        if (isset($postData['post_content'])) {
+            // TODO: Look through the post find all images see if we have them in the DB and replace the path
+
+
+            // TODO: put this is a preg_match callback
+//        tkvd(func_get_args());
+//            $attachments = get_posts( array(
+//                'post_type' => 'attachment',
+//                'posts_per_page' => -1,
+//                'post_parent' => $post['post_id'],
+//                'exclude'     => get_post_thumbnail_id()
+//            ) );
+//            if ($attachments) {
+//                $images = array();
+//                foreach ( $attachments as $attachment ) {
+//                    $images[$attachment->ID] = wp_get_attachment_url( $attachment->ID );
+//                }
+//            }
+
+            // This will not suffice as it may blow away legit images.
+            //$postData['post_content'] = preg_replace('|^htt(.+)/wp-content/uploads/(.+)|', '/wp-content/uploads/$1', $postData['post_content']);
+
+            //tkvd($postData);
+        }
+        return $postData;
+    }
+
+
+    public function wp_import_post_meta($metadata, $postId, $postData)
+    {
+
+        foreach ($metadata as $k => $data) {
+            if (!array_key_exists('key', $data) || $data['key'] != '_ct_slider') continue;
+            $images = unserialize($data['value']);
+
+            // Find post images
+//            foreach ($images as $id => $img) {
+//                $images[$id] = preg_replace('|^htt(.+)/wp-content/uploads/(.+)|', '/wp-content/uploads/$2', $img);
+//            }
+            $attachments = get_posts( array(
+                'post_type' => 'attachment',
+                'posts_per_page' => -1,
+                'post_parent' => $postId,
+                'exclude'     => get_post_thumbnail_id()
+            ) );
+            if ($attachments) {
+                $images = array();
+                foreach ( $attachments as $attachment ) {
+                    $images[$attachment->ID] = wp_get_attachment_url( $attachment->ID );
+                }
+            }
+
+            $data['value'] = serialize($images);
+            $metadata[$k] = $data;
+        }
+        return $metadata;
+    }
+
+    public function import_post_meta($post_id)
+    {
+//        tkvd(func_get_args());
+//        tkvd($key);
+//        tkvd($value);
+    }
+
+
 	/**
 	 * Render the settings page for this plugin.
 	 *
@@ -159,7 +229,6 @@ class Tk_Listing_Importer_Admin {
 	public function options_update() {
 		register_setting($this->plugin_name, $this->plugin_name, array($this, 'validate'));
 
-        // TODO: Add a success message and redirect
         if (isset($_SESSION['tk-listing-importer_import-success'])) {
             foreach ($_SESSION['tk-listing-importer_import-success'] as $msg) {
                 add_settings_error('import-success', '', $msg, 'updated');

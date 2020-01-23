@@ -187,6 +187,13 @@ class Tk_Listing_Importer {
 		// Save/Update our plugin options
 		$this->loader->add_action('admin_init', $plugin_admin, 'onInit');
 		$this->loader->add_action('admin_init', $plugin_admin, 'options_update');
+
+
+        $this->loader->add_filter( 'wp_import_post_data_processed', $plugin_admin, 'wp_import_post_data_processed', 10, 2 );
+        $this->loader->add_filter( 'wp_import_post_meta', $plugin_admin, 'wp_import_post_meta' , 10, 3);
+
+		//$this->loader->add_action('wp_import_post_meta', $plugin_admin, 'wp_import_post_meta');
+		//$this->loader->add_action('import_post_meta', $plugin_admin, 'import_post_meta');
 	}
 
     public function run_import()
