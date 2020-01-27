@@ -230,10 +230,10 @@ class Tk_Import extends WP_Importer  {
 		wp_defer_term_counting( false );
 		wp_defer_comment_counting( false );
 
-		$this->log(__( 'All done.', $this->plugin_name ));
-		//echo '<p>' . __( 'All done.', $this->plugin_name ) . ' <a href="' . admin_url() . '">' . __( 'Have fun!', $this->plugin_name ) . '</a>' . '</p>';
-
 		do_action( 'import_end' );
+
+		$this->log('Duration: ' . $this->getDuration());
+        $this->log('Import Complete!');
 	}
 
     protected function bytes2Str($size)
@@ -499,36 +499,21 @@ class Tk_Import extends WP_Importer  {
 
 	protected function delete_post($post_type = 'listings')
 	{
-        // Delete parent posts
+        // Delete listings and children records
         $result = $this->wpdb->query(
             $this->wpdb->prepare( "
-            DELETE posts, pt, pm
+            DELETE posts, pt, pm, children
             FROM {$this->wpdb->posts} posts
             LEFT JOIN {$this->wpdb->term_relationships} pt ON pt.object_id = posts.ID
             LEFT JOIN {$this->wpdb->postmeta} pm ON pm.post_id = posts.ID
-            WHERE posts.post_type = %s OR posts.post_type = 'attachment'
+            LEFT JOIN {$this->wpdb->posts} children ON children.post_parent = posts.ID AND children.post_type = 'attachment'
+            WHERE (posts.post_type = %s)
             ",
                 $post_type
             )
         );
 
-//        // Delete orphaned post
-//        $r = $this->wpdb->query("
-//DELETE p, pp
-//FROM {$this->wpdb->posts} p
-//LEFT JOIN {$this->wpdb->posts} pp ON (pp.post_parent > 0 AND p.ID = pp.post_parent)
-//WHERE pp.ID IS NULL
-//");
-//        // Delete orphaned metadata
-//        $r = $this->wpdb->query("
-//DELETE pm
-//FROM {$this->wpdb->postmeta} pm
-//LEFT JOIN {$this->wpdb->posts} wp ON wp.ID = pm.post_id
-//WHERE wp.ID IS NULL
-//");
-
 		return $result!==false;
-
 	}
 
 	/**

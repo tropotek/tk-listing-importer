@@ -188,12 +188,8 @@ class Tk_Listing_Importer {
 		$this->loader->add_action('admin_init', $plugin_admin, 'onInit');
 		$this->loader->add_action('admin_init', $plugin_admin, 'options_update');
 
-
-        $this->loader->add_filter( 'wp_import_post_data_processed', $plugin_admin, 'wp_import_post_data_processed', 10, 2 );
-        $this->loader->add_filter( 'wp_import_post_meta', $plugin_admin, 'wp_import_post_meta' , 10, 3);
-
-		//$this->loader->add_action('wp_import_post_meta', $plugin_admin, 'wp_import_post_meta');
-		//$this->loader->add_action('import_post_meta', $plugin_admin, 'import_post_meta');
+		// Use this to fix the ct slider image ID's
+		$this->loader->add_action('import_end', $plugin_admin, 'import_end');
 	}
 
     public function run_import()
@@ -230,8 +226,6 @@ class Tk_Listing_Importer {
 	{
 		$options = get_option($this->plugin_name);
 		$url = trim($options['url'], '/') . '/';
-		//error_log(print_r($options, true));
-        //return sprintf('%s?tk-listing-exporter=%s', $url, urlencode($options['key']));
         return sprintf('%s?tk-listing-exporter=%s', $url, urlencode($this->encrypt($options['key'])));
 	}
 

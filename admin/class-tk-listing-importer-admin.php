@@ -139,73 +139,35 @@ class Tk_Listing_Importer_Admin {
 
     }
 
-
-
-    public function wp_import_post_data_processed($postData, $post)
+    public function import_end()
     {
-        if (isset($postData['post_content'])) {
-            // TODO: Look through the post find all images see if we have them in the DB and replace the path
+        global $wpdb;
 
+        $posts = get_posts( array(
+            'post_type' => 'listings',
+            'posts_per_page' => -1
+        ) );
+        foreach ($posts as $post) {
+            $images = get_post_meta($post->ID, '_ct_slider', true);
+            if (!$images || !is_array($images)) continue;
 
-            // TODO: put this is a preg_match callback
-//        tkvd(func_get_args());
-//            $attachments = get_posts( array(
-//                'post_type' => 'attachment',
-//                'posts_per_page' => -1,
-//                'post_parent' => $post['post_id'],
-//                'exclude'     => get_post_thumbnail_id()
-//            ) );
-//            if ($attachments) {
-//                $images = array();
-//                foreach ( $attachments as $attachment ) {
-//                    $images[$attachment->ID] = wp_get_attachment_url( $attachment->ID );
-//                }
-//            }
-
-            // This will not suffice as it may blow away legit images.
-            //$postData['post_content'] = preg_replace('|^htt(.+)/wp-content/uploads/(.+)|', '/wp-content/uploads/$1', $postData['post_content']);
-
-            //tkvd($postData);
-        }
-        return $postData;
-    }
-
-
-    public function wp_import_post_meta($metadata, $postId, $postData)
-    {
-
-        foreach ($metadata as $k => $data) {
-            if (!array_key_exists('key', $data) || $data['key'] != '_ct_slider') continue;
-            $images = unserialize($data['value']);
-
-            // Find post images
-//            foreach ($images as $id => $img) {
-//                $images[$id] = preg_replace('|^htt(.+)/wp-content/uploads/(.+)|', '/wp-content/uploads/$2', $img);
-//            }
-            $attachments = get_posts( array(
-                'post_type' => 'attachment',
-                'posts_per_page' => -1,
-                'post_parent' => $postId,
-                'exclude'     => get_post_thumbnail_id()
-            ) );
-            if ($attachments) {
-                $images = array();
-                foreach ( $attachments as $attachment ) {
-                    $images[$attachment->ID] = wp_get_attachment_url( $attachment->ID );
-                }
+            $newList = array();
+            foreach ($images as $id => $img) {
+                // The relative url
+                $relativePath = substr($img, strpos($img, '/wp-content/uploads/'));
+                $localImage = current($wpdb->get_results("
+                SELECT * 
+                FROM $wpdb->posts 
+                WHERE guid like '%$relativePath'
+                AND post_type='attachment' 
+                LIMIT 1"));
+                if (!$localImage) continue;
+                // Save with local post ID and path
+                $newList[$localImage->ID] = $localImage->guid;
             }
-
-            $data['value'] = serialize($images);
-            $metadata[$k] = $data;
+            update_post_meta($post->ID, '_ct_slider', $newList);
         }
-        return $metadata;
-    }
-
-    public function import_post_meta($post_id)
-    {
-//        tkvd(func_get_args());
-//        tkvd($key);
-//        tkvd($value);
+        tkvd('Updated _ct_slider metadata.');
     }
 
 
@@ -217,9 +179,7 @@ class Tk_Listing_Importer_Admin {
 	public function display_plugin_setup_page() {
 
 		include_once('partials/tk-listing-importer-admin-display.php');
-
 	}
-
 
 	/**
 	*
